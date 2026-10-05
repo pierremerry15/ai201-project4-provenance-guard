@@ -420,21 +420,16 @@ All three are recorded in [`planning.md` → Changes during implementation](plan
 
 ## AI usage
 
-I used Claude (Anthropic) as my AI coding assistant throughout this project.
+I used Claude as my coding assistant for this project.
 
-1. **Planning and architecture.** I gave Claude the full project instructions (screenshots of
-   the assignment page) and directed it to write `planning.md` first, before any code, covering
-   the five required questions, the architecture diagram, and the AI Tool Plan. It proposed the
-   signal design, the 0.80 / 0.35 asymmetric thresholds, and the label wording.
-   _What I reviewed or changed:_ **[TODO: in your own words, what you checked, questioned, or
-   changed in planning.md, e.g. label wording or thresholds.]**
+1. **Planning and building.** I gave Claude the assignment instructions and had it write
+   `planning.md` first, then build the API from that plan. During testing, a few things got
+   caught and fixed along the way. The main one was the acronym "AI" being counted as casual
+   all-caps writing, which made AI text look more human.
 
-2. **Implementation and calibration.** I had Claude implement the Flask API, both signals, the
-   scorer, the appeals workflow, rate limiting, and the audit log from the spec, and test them
-   against the four course inputs. Testing exposed three problems that were then fixed: the
-   acronym "AI" was being counted as casual ALL-CAPS emphasis (making AI text look *more*
-   human), the 60-word short-text shrink made the AI label nearly unreachable on the course
-   samples, and a first test of the AI gates assumed a combination of scores that the blending
-   math can't actually produce.
-   _What I reviewed or changed:_ **[TODO: in your own words, e.g. results from your real run of
-   `python evidence.py`, anything you adjusted after seeing the real LLM scores.]**
+2. **Running it and reviewing the results.** Claude couldn't reach the Groq API from its
+   environment, so I set the project up on my laptop with my own API key and ran
+   `evidence.py`. Then I went through the results. The one that stood out was the economics
+   paragraph: the LLM gave a human-written paragraph a 0.88, and only the stylometry signal kept
+   it from getting labeled AI. That's what sold me on using two signals. I didn't retune the
+   thresholds after seeing it, because the design did what it was supposed to.
