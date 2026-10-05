@@ -422,12 +422,13 @@ All three are recorded in [`planning.md` → Changes during implementation](plan
 
 I used Claude as my coding assistant for this project.
 
-1. **Planning and building.** I gave Claude the assignment instructions and had it write
-   `planning.md` first, then build the API from that plan. During testing, a few things got
-   caught and fixed along the way. The main one was the acronym "AI" being counted as casual
-   all-caps writing, which made AI text look more human.
+1. **Automated Tests.** I had Claude help me write some of the tests in 
+   `tests/test_app.py` There are 11 of them, covering the scoring thresholds, the three labels,
+   the appeal errors, and the rate limit. The LLM is faked in them, so they run without an API key.
+   One of the first tests checked for a score combination the math can't actually produce,
+   check every possible combination instead.
 
-2. **Running it and reviewing the results.** Claude couldn't reach the Groq API from its
+3. **Running it and reviewing the results.** Claude couldn't reach the Groq API from its
    environment, so I set the project up on my laptop with my own API key and ran
    `evidence.py`. Then I went through the results. The one that stood out was the economics
    paragraph: the LLM gave a human-written paragraph a 0.88, and only the stylometry signal kept
