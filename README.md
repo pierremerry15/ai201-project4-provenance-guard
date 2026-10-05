@@ -270,6 +270,27 @@ Full file: [`logs/audit_log.jsonl`](logs/audit_log.jsonl)
 ```
 <!-- EVIDENCE:END -->
 
+### What the real run showed
+
+- **The clear cases separate cleanly.** Clearly AI scored `ai_score` 0.90 (both signals ≥ 0.89),
+  and clearly human scored 0.11 (both signals ≤ 0.12). Both got definite labels with ~0.90
+  confidence, so the scale isn't stuck in the middle.
+- **The two-signal design prevented a false positive.** On the *human-written* formal economics
+  paragraph, the LLM judge said **0.88**, which is confidently AI, even though its prompt says
+  formal writing isn't evidence of AI on its own. On its own that would have earned an AI label.
+  Stylometry only scored it 0.57, so the disagreement pulled the combined score down to 0.72,
+  below the 0.80 AI threshold, and the label came out "Origin unclear". This is the
+  false-positive scenario from `planning.md` §4, now observed with real scores.
+- **The LLM was fooled by light human-style editing.** The lightly edited AI paragraph got only
+  0.28 from the LLM: it read "I've" and the em-dash as human voice. Stylometry (0.43) kept the
+  result at "uncertain" rather than "likely human". That's a false negative, the cheaper kind of
+  error, and arguably the right answer for mixed authorship.
+- **Confidence tracks real uncertainty.** The two definite labels sit at ~0.90 confidence and
+  the two borderline cases at 0.63–0.72. Those are different labels, not just different numbers.
+- **The signals fail in different places,** which is the reason to have two. The LLM erred on
+  formal human writing (too high) and on edited AI (too low). Stylometry was moderate on both.
+  Neither signal alone would have produced the right labels on all four inputs.
+
 ---
 
 ## Transparency labels
@@ -348,17 +369,20 @@ The sample entries are in the evidence section above.
 - **Formal human writing is the most likely misclassification.** Academic prose, legal or
   technical writing, and writing by non-native English speakers who learned a formal register
   all score AI-like on stylometry: long words, no contractions, even sentences, and often
-  "furthermore"/"moreover", which are on the stock-phrase list. The LLM can share this bias. The
-  thresholds and gates mean this usually lands in "Origin unclear" rather than "Likely AI", but a
-  formal *and* generic human paragraph could still be labeled AI. That's the case the appeal path
-  exists for.
+  "furthermore"/"moreover", which are on the stock-phrase list. The real run confirmed the LLM
+  shares this bias: it scored the course's human-written economics paragraph 0.88. Only the
+  stylometry disagreement kept that out of the AI label. A formal paragraph that *also* uses
+  several stock phrases would push stylometry above 0.55, and then both signals would agree on a
+  wrong answer. That's the case the appeal path exists for.
 - **Poetry and song lyrics.** Line breaks are treated as sentence boundaries, so a poem with a
   repeated refrain has artificially uniform "sentence" lengths (AI-like burstiness), while simple
   vocabulary makes it look human-like on word length. The stylometry score for poetry is mostly
   noise.
 - **AI text told to sound casual** ("lowercase, slang, a typo or two") defeats stylometry by
-  design. Only the LLM signal can catch it, so it usually comes out "uncertain" (a false
-  negative, accepted because of the false-positive asymmetry).
+  design, and the real run showed the LLM is also easily swayed by surface voice: one "I've" and
+  an em-dash dropped the edited-AI sample to 0.28. Humanized AI text will usually come out
+  "uncertain" or even "likely human" (a false negative, accepted because of the false-positive
+  asymmetry).
 - **Short texts (< 40 words) can never be labeled AI**, and under 25 words can't be labeled
   human. Captions and short poems get "Origin unclear" almost by default.
 - **Mixed authorship isn't modeled.** A human-edited AI draft or an AI-polished human draft gets
