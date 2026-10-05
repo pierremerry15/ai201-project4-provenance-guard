@@ -379,3 +379,25 @@ spec, not the whole assignment, and I verify the output against the spec before 
 An automated test file (`tests/test_app.py`) with the LLM mocked checks every threshold, gate,
 label, and error code without spending API calls, so I can catch regressions when I change a
 prompt or a weight.
+
+---
+
+## Changes during implementation
+
+Recorded after building, so the spec above stays an honest record of what was planned.
+
+1. **Short-text shrink cutoff: 60 words → 40 words.** All four course test inputs are 39–55
+   words. With the planned 60-word cutoff, the short-text shrink stacked on top of the
+   disagreement shrink, and the clearly-AI sample could only reach `likely_ai` if the LLM
+   scored it ≥ 0.85. The 40-word AI gate already protects short texts, so the shrink was
+   double-penalizing. At 40 words, clearly-AI text reaches `likely_ai` when the LLM scores it
+   ≥ ~0.77, and both borderline samples still land in `uncertain` across the whole LLM range.
+2. **The per-signal AI gates turned out to be implied by the disagreement shrink.** With
+   0.6/0.4 weights, a combined score can't reach 0.80 unless both signals are already above
+   their gate values (e.g. LLM 1.0 + stylometry 0.50 → 0.72). I kept the explicit gates
+   anyway, as a backstop in case the weights are ever retuned, and the test suite checks the
+   property directly ("every `likely_ai` result has LLM ≥ 0.65 and stylometry ≥ 0.55").
+3. **ALL-CAPS emphasis counts only words of 3+ letters.** The first stylometry run counted
+   "AI" in the clearly-AI sample as casual emphasis, which made it look more human.
+4. **Model:** `meta-llama/llama-4-scout-17b-16e-instruct` is retired on Groq, so the default
+   is `openai/gpt-oss-120b` (overridable with `GROQ_MODEL`).
